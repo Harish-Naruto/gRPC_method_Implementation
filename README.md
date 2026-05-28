@@ -85,14 +85,14 @@ go run ./bidirectional-stream/client
 
 The core API contract is defined in:
 
-- `/tmp/workspace/Harish-Naruto/gRPC_method_Implementation/proto/user.proto`
+- `proto/user.proto`
 
 ## Regenerating Protobuf Stubs
 
 If you update protobuf definitions, regenerate code using your configured toolchain (Buf/protoc) based on:
 
-- `/tmp/workspace/Harish-Naruto/gRPC_method_Implementation/buf.yaml`
-- `/tmp/workspace/Harish-Naruto/gRPC_method_Implementation/buf.gen.yaml`
+- `buf.yaml`
+- `buf.gen.yaml`
 
 ## Notes
 
