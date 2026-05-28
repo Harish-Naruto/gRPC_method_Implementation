@@ -17,6 +17,10 @@ service SendHello {
 }
 
 service UserStream {
+  //server streaming
   rpc SendHeartbeat(helloRequest) returns (stream helloResponce);
+
+  //client streaming
+  rpc ReceiveHeartbeat(stream helloRequest) returns (helloResponce);
 }
 

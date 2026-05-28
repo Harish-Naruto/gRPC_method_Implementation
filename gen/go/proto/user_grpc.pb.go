@@ -121,7 +121,8 @@ var SendHello_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	UserStream_SendHeartbeat_FullMethodName = "/user.UserStream/SendHeartbeat"
+	UserStream_SendHeartbeat_FullMethodName    = "/user.UserStream/SendHeartbeat"
+	UserStream_ReceiveHeartbeat_FullMethodName = "/user.UserStream/ReceiveHeartbeat"
 )
 
 // UserStreamClient is the client API for UserStream service.
@@ -129,6 +130,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserStreamClient interface {
 	SendHeartbeat(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[HelloResponce], error)
+	ReceiveHeartbeat(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[HelloRequest, HelloResponce], error)
 }
 
 type userStreamClient struct {
@@ -158,11 +160,25 @@ func (c *userStreamClient) SendHeartbeat(ctx context.Context, in *HelloRequest, 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type UserStream_SendHeartbeatClient = grpc.ServerStreamingClient[HelloResponce]
 
+func (c *userStreamClient) ReceiveHeartbeat(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[HelloRequest, HelloResponce], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &UserStream_ServiceDesc.Streams[1], UserStream_ReceiveHeartbeat_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[HelloRequest, HelloResponce]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type UserStream_ReceiveHeartbeatClient = grpc.ClientStreamingClient[HelloRequest, HelloResponce]
+
 // UserStreamServer is the server API for UserStream service.
 // All implementations must embed UnimplementedUserStreamServer
 // for forward compatibility.
 type UserStreamServer interface {
 	SendHeartbeat(*HelloRequest, grpc.ServerStreamingServer[HelloResponce]) error
+	ReceiveHeartbeat(grpc.ClientStreamingServer[HelloRequest, HelloResponce]) error
 	mustEmbedUnimplementedUserStreamServer()
 }
 
@@ -175,6 +191,9 @@ type UnimplementedUserStreamServer struct{}
 
 func (UnimplementedUserStreamServer) SendHeartbeat(*HelloRequest, grpc.ServerStreamingServer[HelloResponce]) error {
 	return status.Error(codes.Unimplemented, "method SendHeartbeat not implemented")
+}
+func (UnimplementedUserStreamServer) ReceiveHeartbeat(grpc.ClientStreamingServer[HelloRequest, HelloResponce]) error {
+	return status.Error(codes.Unimplemented, "method ReceiveHeartbeat not implemented")
 }
 func (UnimplementedUserStreamServer) mustEmbedUnimplementedUserStreamServer() {}
 func (UnimplementedUserStreamServer) testEmbeddedByValue()                    {}
@@ -208,6 +227,13 @@ func _UserStream_SendHeartbeat_Handler(srv interface{}, stream grpc.ServerStream
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type UserStream_SendHeartbeatServer = grpc.ServerStreamingServer[HelloResponce]
 
+func _UserStream_ReceiveHeartbeat_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(UserStreamServer).ReceiveHeartbeat(&grpc.GenericServerStream[HelloRequest, HelloResponce]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type UserStream_ReceiveHeartbeatServer = grpc.ClientStreamingServer[HelloRequest, HelloResponce]
+
 // UserStream_ServiceDesc is the grpc.ServiceDesc for UserStream service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -220,6 +246,11 @@ var UserStream_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "SendHeartbeat",
 			Handler:       _UserStream_SendHeartbeat_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "ReceiveHeartbeat",
+			Handler:       _UserStream_ReceiveHeartbeat_Handler,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "proto/user.proto",
