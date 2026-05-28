@@ -1,5 +1,3 @@
-// SERVER
-
 package main
 
 import (
@@ -7,11 +5,9 @@ import (
 	"io"
 	"log"
 	"net"
-	"sync"
 	"time"
 
 	"google.golang.org/grpc"
-
 	user "learn.com/grpc/gen/go/proto"
 )
 
@@ -19,87 +15,43 @@ type userService struct {
 	user.UnimplementedUserStreamServer
 }
 
-func (s *userService) ComminucateHello(
-	stream grpc.BidiStreamingServer[user.HelloRequest, user.HelloResponce],
-) error {
-
-	log.Println("client connected")
-
-	var wg sync.WaitGroup
-
-	// protects concurrent stream.Send()
-	var mu sync.Mutex
-
+func (userService *userService) ComminucateHello( stream grpc.BidiStreamingServer[user.HelloRequest, user.HelloResponce]) error {
 	for {
-
-		req, err := stream.Recv()
-
-		if err == io.EOF {
-			log.Println("client finished sending")
-			break
+		req ,err := stream.Recv()
+		if err == io.EOF{
+			log.Println("data stream ended")
+			return nil
 		}
-
-		if err != nil {
-			log.Println("recv error:", err)
+		if err!= nil {
+			log.Fatal(err.Error())
 			return err
 		}
-
-		log.Println("received:", req.Name)
-
-		name := req.Name
-
-		wg.Add(1)
-
-		go func(name string) {
-			defer wg.Done()
-
-			log.Println("processing:", name)
-
-			time.Sleep(5 * time.Second)
-
-			res := &user.HelloResponce{
-				Title: fmt.Sprintf("hello %s", name),
+		log.Println("data received: ",req.Name)
+		go func() {
+			log.Println("data processing")
+			time.Sleep(5*time.Second)
+			
+			//add mutex to make this safe for concurrency Send is not safe for concurrency
+			if err := stream.Send(&user.HelloResponce{
+				Title: fmt.Sprint("hello, ",req.Name),
+			}); err != nil {
+				log.Fatal(err.Error())
 			}
-
-			// stream.Send is NOT concurrency safe
-			mu.Lock()
-			defer mu.Unlock()
-
-			if err := stream.Send(res); err != nil {
-				log.Println("send error:", err)
-				return
-			}
-
-			log.Println("response sent:", name)
-
-		}(name)
+		}()		
 	}
 
-	// wait all workers
-	wg.Wait()
-
-	log.Println("closing stream")
-
-	return nil
 }
 
+
 func main() {
-
-	lis, err := net.Listen("tcp", ":9000")
+	lis,err := net.Listen("tcp",":9000")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
-
-	grpcServer := grpc.NewServer()
-
-	user.RegisterUserStreamServer(
-		grpcServer,
-		&userService{},
-	)
-
-	log.Println("gRPC server started on :9000")
-
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatal(err)
+	gRPCServer := grpc.NewServer()
+	us := &userService{}
+	user.RegisterUserStreamServer(gRPCServer,us)
+	if err := gRPCServer.Serve(lis); err != nil {
+		log.Fatal(err.Error())
 	}
 }
