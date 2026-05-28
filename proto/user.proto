@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "learn.com/grpc/unary-stream/gen/go/user";
+
+message helloRequest {
+  string name = 1;
+}
+
+message helloResponce {
+  string title = 1;
+}
+
+service SendHello {
+  rpc SendHello(helloRequest) returns (helloResponce);
+}
+
+service UserStream {
+  rpc SendHeartbeat(helloRequest) returns (stream helloResponce);
+}
+
