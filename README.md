@@ -9,6 +9,10 @@ This repository demonstrates all four primary gRPC communication patterns in Go:
 
 It is structured as a learning/reference project with separate client and server examples for each pattern.
 
+## What this project demonstrates
+
+This project uses one shared protobuf contract (`proto/user.proto`) and implements it in four different RPC styles so you can compare behavior and request/response flow side-by-side.
+
 ## Tech Stack
 
 - Go `1.25`
@@ -42,12 +46,6 @@ Install dependencies:
 go mod download
 ```
 
-Validate the repository:
-
-```bash
-go test ./...
-```
-
 ## Running Examples
 
 Each example has its own server and client under the corresponding folder.  
@@ -60,12 +58,16 @@ go run ./unary-stream/server
 go run ./unary-stream/client
 ```
 
+Client sends a single request and receives a single response.
+
 ### 2) Server Streaming RPC
 
 ```bash
 go run ./server-stream/server
 go run ./server-stream/client
 ```
+
+Client sends one request and receives multiple streamed responses.
 
 ### 3) Client Streaming RPC
 
@@ -74,12 +76,16 @@ go run ./client-stream/server
 go run ./client-stream/client
 ```
 
+Client sends multiple streamed requests and receives one response at the end.
+
 ### 4) Bidirectional Streaming RPC
 
 ```bash
 go run ./bidirectional-stream/server
 go run ./bidirectional-stream/client
 ```
+
+Client and server both send streams simultaneously over one connection.
 
 ## Protocol Definition
 
@@ -89,7 +95,13 @@ The core API contract is defined in:
 
 ## Regenerating Protobuf Stubs
 
-If you update protobuf definitions, regenerate code using your configured toolchain (Buf/protoc) based on:
+If you update protobuf definitions, regenerate code with Buf:
+
+```bash
+buf generate
+```
+
+Generation configuration files:
 
 - `buf.yaml`
 - `buf.gen.yaml`
