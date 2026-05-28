@@ -119,11 +119,12 @@ const file_proto_user_proto_rawDesc = "" +
 	"\rhelloResponce\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title2A\n" +
 	"\tSendHello\x124\n" +
-	"\tSendHello\x12\x12.user.helloRequest\x1a\x13.user.helloResponce2\x87\x01\n" +
+	"\tSendHello\x12\x12.user.helloRequest\x1a\x13.user.helloResponce2\xc8\x01\n" +
 	"\n" +
 	"UserStream\x12:\n" +
 	"\rSendHeartbeat\x12\x12.user.helloRequest\x1a\x13.user.helloResponce0\x01\x12=\n" +
-	"\x10ReceiveHeartbeat\x12\x12.user.helloRequest\x1a\x13.user.helloResponce(\x01B)Z'learn.com/grpc/unary-stream/gen/go/userb\x06proto3"
+	"\x10ReceiveHeartbeat\x12\x12.user.helloRequest\x1a\x13.user.helloResponce(\x01\x12?\n" +
+	"\x10ComminucateHello\x12\x12.user.helloRequest\x1a\x13.user.helloResponce(\x010\x01B)Z'learn.com/grpc/unary-stream/gen/go/userb\x06proto3"
 
 var (
 	file_proto_user_proto_rawDescOnce sync.Once
@@ -146,11 +147,13 @@ var file_proto_user_proto_depIdxs = []int32{
 	0, // 0: user.SendHello.SendHello:input_type -> user.helloRequest
 	0, // 1: user.UserStream.SendHeartbeat:input_type -> user.helloRequest
 	0, // 2: user.UserStream.ReceiveHeartbeat:input_type -> user.helloRequest
-	1, // 3: user.SendHello.SendHello:output_type -> user.helloResponce
-	1, // 4: user.UserStream.SendHeartbeat:output_type -> user.helloResponce
-	1, // 5: user.UserStream.ReceiveHeartbeat:output_type -> user.helloResponce
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	0, // 3: user.UserStream.ComminucateHello:input_type -> user.helloRequest
+	1, // 4: user.SendHello.SendHello:output_type -> user.helloResponce
+	1, // 5: user.UserStream.SendHeartbeat:output_type -> user.helloResponce
+	1, // 6: user.UserStream.ReceiveHeartbeat:output_type -> user.helloResponce
+	1, // 7: user.UserStream.ComminucateHello:output_type -> user.helloResponce
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name

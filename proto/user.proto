@@ -22,5 +22,9 @@ service UserStream {
 
   //client streaming
   rpc ReceiveHeartbeat(stream helloRequest) returns (helloResponce);
+
+  //bidirectional streaming
+  rpc ComminucateHello(stream helloRequest) returns (stream helloResponce);
+
 }
 

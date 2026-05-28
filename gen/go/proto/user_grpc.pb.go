@@ -123,14 +123,19 @@ var SendHello_ServiceDesc = grpc.ServiceDesc{
 const (
 	UserStream_SendHeartbeat_FullMethodName    = "/user.UserStream/SendHeartbeat"
 	UserStream_ReceiveHeartbeat_FullMethodName = "/user.UserStream/ReceiveHeartbeat"
+	UserStream_ComminucateHello_FullMethodName = "/user.UserStream/ComminucateHello"
 )
 
 // UserStreamClient is the client API for UserStream service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserStreamClient interface {
+	// server streaming
 	SendHeartbeat(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[HelloResponce], error)
+	// client streaming
 	ReceiveHeartbeat(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[HelloRequest, HelloResponce], error)
+	// bidirectional streaming
+	ComminucateHello(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[HelloRequest, HelloResponce], error)
 }
 
 type userStreamClient struct {
@@ -173,12 +178,29 @@ func (c *userStreamClient) ReceiveHeartbeat(ctx context.Context, opts ...grpc.Ca
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type UserStream_ReceiveHeartbeatClient = grpc.ClientStreamingClient[HelloRequest, HelloResponce]
 
+func (c *userStreamClient) ComminucateHello(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[HelloRequest, HelloResponce], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &UserStream_ServiceDesc.Streams[2], UserStream_ComminucateHello_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[HelloRequest, HelloResponce]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type UserStream_ComminucateHelloClient = grpc.BidiStreamingClient[HelloRequest, HelloResponce]
+
 // UserStreamServer is the server API for UserStream service.
 // All implementations must embed UnimplementedUserStreamServer
 // for forward compatibility.
 type UserStreamServer interface {
+	// server streaming
 	SendHeartbeat(*HelloRequest, grpc.ServerStreamingServer[HelloResponce]) error
+	// client streaming
 	ReceiveHeartbeat(grpc.ClientStreamingServer[HelloRequest, HelloResponce]) error
+	// bidirectional streaming
+	ComminucateHello(grpc.BidiStreamingServer[HelloRequest, HelloResponce]) error
 	mustEmbedUnimplementedUserStreamServer()
 }
 
@@ -194,6 +216,9 @@ func (UnimplementedUserStreamServer) SendHeartbeat(*HelloRequest, grpc.ServerStr
 }
 func (UnimplementedUserStreamServer) ReceiveHeartbeat(grpc.ClientStreamingServer[HelloRequest, HelloResponce]) error {
 	return status.Error(codes.Unimplemented, "method ReceiveHeartbeat not implemented")
+}
+func (UnimplementedUserStreamServer) ComminucateHello(grpc.BidiStreamingServer[HelloRequest, HelloResponce]) error {
+	return status.Error(codes.Unimplemented, "method ComminucateHello not implemented")
 }
 func (UnimplementedUserStreamServer) mustEmbedUnimplementedUserStreamServer() {}
 func (UnimplementedUserStreamServer) testEmbeddedByValue()                    {}
@@ -234,6 +259,13 @@ func _UserStream_ReceiveHeartbeat_Handler(srv interface{}, stream grpc.ServerStr
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type UserStream_ReceiveHeartbeatServer = grpc.ClientStreamingServer[HelloRequest, HelloResponce]
 
+func _UserStream_ComminucateHello_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(UserStreamServer).ComminucateHello(&grpc.GenericServerStream[HelloRequest, HelloResponce]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type UserStream_ComminucateHelloServer = grpc.BidiStreamingServer[HelloRequest, HelloResponce]
+
 // UserStream_ServiceDesc is the grpc.ServiceDesc for UserStream service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -250,6 +282,12 @@ var UserStream_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "ReceiveHeartbeat",
 			Handler:       _UserStream_ReceiveHeartbeat_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "ComminucateHello",
+			Handler:       _UserStream_ComminucateHello_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},
